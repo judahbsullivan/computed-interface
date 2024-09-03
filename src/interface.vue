@@ -117,7 +117,7 @@ export default defineComponent({
 				}
 			}, {
 				immediate: props.initialCompute ||
-					(props.computeIfEmpty && (props.value === null || props.value === undefined)),
+					(props.computeIfEmpty && (props.value === null || props.value === undefined || props.value === "")),
 			});
 		}
 
