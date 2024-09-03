@@ -12,10 +12,7 @@ A [Directus](https://github.com/directus/directus) extension for automatically c
 ![](./screenshots/screenshot2.jpeg)
 
 # Installation
-```
-npm i directus-extension-computed-interface
-```
-
+### WILL UPDATE SOON
 # Get Started
 1. Go to **Settings**, create a new field with type string or number.
 2. In the **Interface** panel, choose **Computed** interface. There are 8 options:
