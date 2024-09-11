@@ -1,3 +1,4 @@
+
 <template>
 	<div v-if="mode" :style="customCss">
 		<span class="prefix">{{ prefix }}</span>
@@ -14,14 +15,14 @@
 		@update:model-value="$emit('input', $event)"
 	/>
 	<v-notice v-if="errorMsg" type="danger">{{ errorMsg }}</v-notice>
-  	<div>
-    <label for="disable-computation">Disable Auto-Slug</label>
-		<input type="checkbox" id="disable-computation" v-model="disableComputation" />
+	<div>
+		<!-- Button to trigger manual computation -->
+		<button @click="computeAndEmitValue">Compute Value</button>
 	</div>
 </template>
 
 <script lang="ts">
-import { ComputedRef, defineComponent, inject, ref, watch, toRefs } from 'vue';
+import { defineComponent, ref, inject, watch, toRefs } from 'vue';
 import { parseExpression } from './operations';
 import { useDeepValues, useCollectionRelations } from './utils';
 import { useCollection } from '@directus/extensions-sdk';
@@ -83,12 +84,10 @@ export default defineComponent({
 	},
 	emits: ['input'],
 	setup(props, { emit }) {
-		const defaultValues = useCollection(props.collection).defaults
+		const defaultValues = useCollection(props.collection).defaults;
 		const computedValue = ref<string | number | null>(props.value);
 		const relations = useCollectionRelations(props.collection);
-		const { collection, field, primaryKey } = toRefs(props)
-    		const disableComputation = ref<boolean>(false); // State for the checkbox
-
+		const { collection, field, primaryKey } = toRefs(props);
 		const values = useDeepValues(
 			inject<ComputedRef<Record<string, any>>>('values')!,
 			relations,
@@ -99,33 +98,14 @@ export default defineComponent({
 		);
 		const errorMsg = ref<string | null>(null);
 
-		if (values) {
-			watch(values, () => {
-				const newValue = compute();
+		// Function to compute the value manually when the button is clicked
+		function computeAndEmitValue() {
+			const newValue = compute();
+			if (newValue !== props.value) {
 				computedValue.value = newValue;
-        		if (disableComputation.value) {
-					computedValue.value = props.value; // Don't compute if checkbox is checked
-					return;
-				}
-				if (props.mode === 'displayonly') {
-					return;
-				}
-				if (newValue !== props.value) {
-					setTimeout(() => {
-						emit('input', newValue);
-					}, 1);
-				}
-			}, {
-				immediate: props.initialCompute ||
-					(props.computeIfEmpty && (props.value === null || props.value === undefined || props.value === "")),
-			});
+				emit('input', newValue);
+			}
 		}
-
-		return {
-			computedValue,
-			errorMsg,
-      disableComputation, // Return the checkbox state to the template
-		};
 
 		function compute() {
 			try {
@@ -148,6 +128,13 @@ export default defineComponent({
 				return null;
 			}
 		}
+
+		return {
+			computedValue,
+			errorMsg,
+			computeAndEmitValue, // Return the function for button click
+		};
 	},
 });
 </script>
+
